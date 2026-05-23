@@ -1,0 +1,55 @@
+<template>
+<ion-page>
+<ion-header>
+<ion-toolbar color = "primary">
+<ion-title>Prakiraan Cuaca Jakarta</ion-title>
+</ion-toolbar>
+</ion-header>
+
+<ion-content class = "ion-padding">
+<div v-if="loading" style="text-align:center;">
+<ion-spinner name="dots"></ion-spinner>
+<p> Memuat data cuaca......</p>
+</div>
+
+<ion-list v-else>
+<ion-item v-for="(w, index) in weatherData" :key="index">
+<ion-label>
+<h2>{{w.time}}</h2>
+<p>Suhu:{{w.temperature_2m}}°C</p>
+</ion-label>
+</ion-item>
+</ion-list>
+</ion-content>
+</ion-page>
+</template>
+
+<script setup>
+import {ref, onMounted} from 'vue'
+import axios from 'axios'
+
+const weatherData = ref([])
+const loading = ref(true)
+
+onMounted(async () => {
+  try {
+    const response = await axios.get('https://api.open-meteo.com/v1/forecast?latitude=-6.2&longitude=106.8&hourly=temperature_2m')
+    const times = response.data.hourly.time.slice(0,10)
+    const temps = response.data.hourly.temperature_2m.slice(0,10)
+    weatherData.value = times.map((t, i) => ({
+      time: t,
+      temperature_2m:temps  [i]
+    }))
+  }catch(err) {
+    console.error('Error fetcing data',err)
+  } finally {
+    loading.value = false
+  }
+})
+</script>
+
+<style scoped>
+h2 {font-size: 20px; font-weight: bold; }
+p {margin: 0; color: #ff8a0c;}
+ion-item {margin-bottom: 8px; border-bottom: 1px solid #d6240d}
+</style>
